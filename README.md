@@ -81,13 +81,5 @@ The final step is to clean up. To avoid unnecessary charges,
 2. You have to manually [delete the S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/delete-bucket.html) created because AWS CloudFormation cannot delete non-empty S3 bucket.
 3. You have to manually delete SageMaker endpoint that was created as part of "Compile Inference Pipeline" step above, as well as XGBoost and Spark models. 
 
-## References
 
-- Refer to [SageMaker SDK documentation](https://github.com/aws/sagemaker-python-sdk/blob/master/src/sagemaker/workflow/README.rst) and [Airflow documentation](https://airflow.apache.org/integration.html?highlight=sagemaker#amazon-sagemaker) for additional details on the Airflow SageMaker operators.
-- Refer to [SageMaker documentation](https://docs.aws.amazon.com/sagemaker/latest/dg/xgboost.html) to learn more about Gradient Boosted Decision Tree algorithm used in the blog post.
-- Refer to [SageMaker documentation](https://aws.amazon.com/blogs/aws/amazon-sagemaker-processing-fully-managed-data-processing-and-model-evaluation/) to learn more about SageMaker Processing service.
-- Refer to [SageMaker documentation](https://docs.aws.amazon.com/sagemaker/latest/dg/inference-pipelines.html) to learn more about SageMaker inference pipelines.
 
-## License Summary
-
-This sample code is made available under a modified MIT license. See the [LICENSE](./LICENSE) file.
