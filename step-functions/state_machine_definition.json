@@ -1,0 +1,82 @@
+{
+  "Comment": "Machine Learning Pipeline With Spark",
+  "StartAt": "RunPreprocess",
+  "States": {
+    "RunPreprocess": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:452432741922:function:executeSparkScriptSageMaker:$LATEST",
+      "ResultPath": "$",
+      "Next": "XGBoostTrainingJob"
+    },
+    "XGBoostTrainingJob": {
+      "Resource": "arn:aws:states:::sagemaker:createTrainingJob.sync",
+      "Parameters": {
+        "AlgorithmSpecification": {
+          "TrainingImage": "683313688378.dkr.ecr.us-east-1.amazonaws.com/sagemaker-xgboost:0.90-1-cpu-py3",
+          "TrainingInputMode": "File"
+        },
+        "OutputDataConfig": {
+          "S3OutputPath.$": "$.s3_output_path"
+        },
+        "StoppingCondition": {
+          "MaxRuntimeInSeconds": 86400
+        },
+        "ResourceConfig": {
+          "InstanceCount": 1,
+          "InstanceType": "ml.m4.xlarge",
+          "VolumeSizeInGB": 20
+        },
+        "RoleArn": "arn:aws:iam::452432741922:role/workshop-role",
+        "InputDataConfig": [
+          {
+            "DataSource": {
+              "S3DataSource": {
+                "S3DataDistributionType": "FullyReplicated",
+                "S3DataType": "S3Prefix",
+                "S3Uri.$": "$.train_data"
+              }
+            },
+            "ChannelName": "train",
+            "ContentType": "text/csv"
+          },
+          {
+            "DataSource": {
+              "S3DataSource": {
+                "S3DataDistributionType": "FullyReplicated",
+                "S3DataType": "S3Prefix",
+                "S3Uri.$": "$.validation_data"
+              }
+            },
+            "ChannelName": "validation",
+            "ContentType": "text/csv"
+          }
+        ],
+        "HyperParameters": {
+          "objective": "reg:linear",
+          "eta": "0.2",
+          "gamma": "4",
+          "max_depth": "5",
+          "num_round": "10",
+          "subsample": "0.7",
+          "silent": "0",
+          "min_child_weight": "6"
+        },
+        "TrainingJobName.$": "$.training_job"
+      },
+      "Type": "Task",
+      "Next": "CreatePipeline"
+    },
+    "CreatePipeline": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:452432741922:function:createPipelineModel",
+      "ResultPath": "$",
+      "Next": "ExecuteBatchTransform"
+    },
+    "ExecuteBatchTransform": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:452432741922:function:executeBatchTransform",
+      "ResultPath": "$",
+      "End": true
+    }
+  }
+}
