@@ -10,9 +10,10 @@ s3 = boto3.resource('s3')
 
 def lambda_handler(event, context):
     schema_json = get_schema_json()
+    bucket = os.environ['bucket']
     # Get the execution ID
     sess = sagemaker.Session()
-    obj = s3.Object('ml-lab-mggaska', 'execution.txt')
+    obj = s3.Object(bucket, 'execution.txt')
     exec_id = obj.get()['Body'].read().decode("utf-8") 
     role = os.environ['role']
     print(exec_id)

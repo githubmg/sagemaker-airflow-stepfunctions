@@ -24,7 +24,7 @@ def lambda_handler(event, context):
     # Store the value of the execution timestamp
     client = boto3.client('s3')
     client.put_object(Body=timestamp_prefix.encode('ascii'),
-                        Bucket='ml-lab-mggaska',
+                        Bucket=bucket,
                         Key='execution.txt')
     # Upload data so it's present for training and inference
     
@@ -39,7 +39,7 @@ def lambda_handler(event, context):
                                   max_runtime_in_seconds=1200,
                                   env={'mode': 'python'})
 
-    spark_processor.run(code='s3://ml-lab-mggaska/sparkdemo/preprocess.py',
+    spark_processor.run(code=f's3://{bucket}/sparkdemo/preprocess.py',
                     arguments=['s3_input_bucket', bucket,
                               's3_input_key_prefix', input_prefix,
                               's3_output_bucket', bucket,
@@ -48,8 +48,8 @@ def lambda_handler(event, context):
                               's3_mleap_model_prefix', mleap_model_prefix],
                     logs=True)
     
-    event['s3_output_path'] = 's3://sagemaker-us-east-1-452432741922/sagemaker/spark-preprocess-demo/2020-08-18-22-44-22/xgboost_model'
-    event['train_data'] = 's3://sagemaker-us-east-1-452432741922/sagemaker/spark-preprocess-demo/2020-08-18-22-44-22/input/preprocessed/abalone/train/part'
-    event['validation_data'] = 's3://sagemaker-us-east-1-452432741922/sagemaker/spark-preprocess-demo/2020-08-18-22-44-22/input/preprocessed/abalone/validation/part'
+    event['s3_output_path'] = f's3://{bucket}/sagemaker/spark-preprocess-demo/{timestamp_prefix}/xgboost_model'
+    event['train_data'] = f's3://{bucket}/sagemaker/spark-preprocess-demo/{timestamp_prefix}/input/preprocessed/abalone/train/part'
+    event['validation_data'] = f's3://{bucket}/sagemaker/spark-preprocess-demo/{timestamp_prefix}/input/preprocessed/abalone/validation/part'
     event['training_job'] = f'{timestamp_prefix}-job' 
     return event
